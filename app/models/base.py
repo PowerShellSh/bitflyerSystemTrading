@@ -2,10 +2,6 @@ from contextlib import contextmanager
 import logging
 import threading
 
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import Float
-from sqlalchemy import Integer
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -20,6 +16,7 @@ Session = scoped_session(sessionmaker(bind=engine))
 lock = threading.Lock()
 
 
+# session scope でエラーがあった場合はIntegrityError
 @contextmanager
 def session_scope():
     session = Session()
@@ -29,54 +26,14 @@ def session_scope():
         yield session
         session.commit()
     except Exception as e:
-        logger.error(f'action=session_scope, error={e}')
+        logger.error(f'action=session_scope error={e}')
         session.rollback()
         raise
     finally:
-        session.expire_on_commit = False
+        session.expire_on_commit = True
         lock.release()
 
 
-def 
-
-
-
-class BaseCandleMixin(object):
-    time = Column(DateTime, primary_key=True, nullable=False)
-    open = Column(Float)
-    close = Column(Float)
-    high = Column(Float)
-    low = Column(Float)
-    volume = Column(Integer)
-
-    @classmethod
-    def create(cls, time, open, close, high, low, volume):
-        candle = cls(
-            time=time,
-            open=open,
-            close=close,
-            high=high,
-            low=low,
-            volume=volume
-        )
-        try:
-            with session_scope() as session:
-                session.add(candle)
-            return candle
-        except IndentationError:
-            return False
-
-class BtcJpyBaseCandle1H(BaseCandleMixin, Base):
-    __tablename__ = 'BTC_JPY_1H'
-
-
-class BtcJpyBaseCandle1M(BaseCandleMixin, Base):
-    __tablename__ = 'BTC_JPY_1M'
-
-
-class BtcJpyBaseCandle5S(BaseCandleMixin ,Base):
-    __tablename__ = 'BTC_JPY_5S'
-
-
 def init_db():
+    import app.models.candle
     Base.metadata.create_all(bind=engine)

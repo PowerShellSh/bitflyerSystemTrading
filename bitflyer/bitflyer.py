@@ -114,7 +114,7 @@ class APIClient(object):
         ask = float(result['best_ask'])
         volume = float(result['volume'])
         return Ticker(product_code, timestamp, bid, ask, volume)
-    
+
 
     def get_realtime_ticker(self, product_code):
         product_code = product_code
@@ -131,7 +131,7 @@ class APIClient(object):
         except Exception as e:
             # ロギング処理するとか
             raise
-    
+
 
     def get_real_ticker_on_message(self, ws, message):
         # WebsocketでJSON-RPCから情報が来た時の処理
@@ -145,4 +145,3 @@ class APIClient(object):
         volume = float(result['volume'])
         print(message)
         return Ticker(product_code, timestamp, bid, ask, volume)
-        
