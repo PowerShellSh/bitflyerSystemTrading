@@ -21,3 +21,8 @@ TRADE_MAP = {
         'granularity': GRANULARITY_1H,
     }
 }
+
+BUY = 'BUY'
+SELL = 'SELL'
+
+PRODUCT_CODE_BTC_JPY = 'BTC_JPY'

@@ -10,6 +10,8 @@ import math
 import constants
 import websocket
 import json
+import datetime
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +31,13 @@ class Ticker(object):
 
     @property
     def time(self):
-        return datetime.utcfromtimestamp(self.timestamp)
+        return datetime.datetime.utcfromtimestamp(self.timestamp)
 
     def truncate_date_time(self, duration):
         ticker_time = self.time
         if duration == constants.DURATION_5S:
             new_sec = math.floor(self.time.second / 5) * 5
-            ticker_time = datetime(
+            ticker_time = datetime.datetime(
                 self.time.year, self.time.month, self.time.day,
                 self.time.hour, self.time.minute, new_sec)
             time_format = '%Y-%m-%d %H:%M:%S'
@@ -47,8 +49,8 @@ class Ticker(object):
             logger.warning('action=truncate_date_time error=no_datetime_format')
             return None
 
-        str_date = datetime.strftime(ticker_time, time_format)
-        return datetime.strptime(str_date, time_format)
+        str_date = datetime.datetime.strftime(ticker_time, time_format)
+        return datetime.datetime.strptime(str_date, time_format)
 
 
 class Balance(object):
@@ -121,10 +123,12 @@ class APIClient(object):
 
         web_socket_url = 'wss://ws.lightstream.bitflyer.com/json-rpc'
         channel = f'lightning_ticker_{product_code}'
-        ws = websocket.WebSocketApp(web_socket_url,
-                                    on_message=self.get_real_ticker_on_message,
-                                    on_open=lambda wss: wss.send(json.dumps({'method': 'subscribe',
-                                                                            'params': {'channel': channel}}))
+        ws = websocket.WebSocketApp(web_socket_url, on_message=self.get_real_ticker_on_message,
+                                    on_open=lambda wss: wss.send(json.dumps(
+                                        {'method': 'subscribe',
+                                         'params':
+                                             {'channel': channel}
+                                        }))
                                     )
         try:
             ws.run_forever()
@@ -133,7 +137,7 @@ class APIClient(object):
             raise
 
 
-    def get_real_ticker_on_message(self, ws, message):
+    def get_real_ticker_on_message(self, ws, message) -> Ticker:
         # WebsocketでJSON-RPCから情報が来た時の処理
         message = json.loads(message)['params']
         result = message.get('message')
@@ -145,3 +149,60 @@ class APIClient(object):
         volume = float(result['volume'])
         print(message)
         return Ticker(product_code, timestamp, bid, ask, volume)
+
+
+# websocketを使ってtickerをリアルタイム取得
+class BfRealtimeTicker(object):
+    def __init__(self, symbol):
+        self.symbol = symbol
+        self.ticker = None
+        self.connect()
+
+    def connect(self):
+        self.ws = websocket.WebSocketApp(
+            'wss://ws.lightstream.bitflyer.com/json-rpc', header=None,
+            on_open = self.on_open, on_message = self.on_message,
+            on_error = self.on_error, on_close = self.on_close)
+        self.ws.keep_running = True
+        self.thread = threading.Thread(target=lambda: self.ws.run_forever())
+        self.thread.daemon = True
+        self.thread.start()
+
+    def is_connected(self):
+        return self.ws.sock and self.ws.sock.connected
+
+    def disconnect(self):
+        self.ws.keep_running = False
+        self.ws.close()
+
+    def get(self, callback):
+        result = self.ticker
+        if False == (result is None):
+            product_code = result['product_code']
+            timestamp = datetime.datetime.timestamp(
+                dateutil.parser.parse(result['timestamp']))
+            bid = float(result['best_bid'])
+            ask = float(result['best_ask'])
+            volume = float(result['volume'])
+            ticker = Ticker(product_code, timestamp, bid, ask, volume)
+            callback(ticker)
+        else:
+            ticker = Ticker(None, None, None, None, None)
+            callback(ticker)
+
+    def on_message(self, ws, message):
+        message = json.loads(message)['params']
+        self.ticker = message['message']
+
+    def on_error(self, ws, error):
+        self.disconnect()
+        time.sleep(0.5)
+        self.connect()
+
+    def on_close(self, ws):
+        print('Websocket disconnected')
+
+    def on_open(self, ws):
+        ws.send(json.dumps( {'method':'subscribe',
+            'params':{'channel':'lightning_ticker_' + self.symbol}} ))
+        print('Websocket connected')

@@ -1,9 +1,19 @@
 import logging
 import sys
-import datetime
+from datetime import datetime
+import app.models
+
 
 from bitflyer.bitflyer import APIClient
-from app.models.candle import BtcJpyBaseCandle1M
+from bitflyer.bitflyer import Ticker
+from app.models.candle import factory_candle_class
+from app.models.candle import create_candle_with_duration
+from bitflyer.bitflyer import BfRealtimeTicker
+from threading import Thread
+from app.controllers.streamdata import StreamData
+
+
+import time
 import settings
 
 
@@ -11,43 +21,27 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 
 if __name__ == "__main__":
-    # api_client = APIClient(settings.api_key, settings.api_account)
-    # balance = api_client.get_balance()
-    # print(balance.available)
-    # print(balance.currency)
-    # ticker = api_client.get_ticker(settings.product_code)
-    # print(ticker.product_code)
-    # print(ticker.ask)
-    # print(ticker.bid)
-    # print(ticker.volume)
-    # print(ticker.truncate_date_time('5s'))
-    # print(ticker.truncate_date_time(settings.trade_duration))
-    # print(ticker.truncate_date_time('1h'))
-    # print(ticker.time)
-    # print('mid : ', ticker.mid_price)
-    # api_client.get_realtime_ticker(settings.product_code)
 
-    # import app.models
-    # now1 = datetime.datetime(2020,1,2,3,4,5)
-    # BtcJpyBaseCandle1M.create(now1, 1.0, 2.0, 3.0, 4.0, 5)
-    # candle = BtcJpyBaseCandle1M.get(now1)
-    # print(candle.time)
-    # print(candle.open)
-    # candle.open = 100.0
-    # candle.save()
+    # now1 = datetime.timestamp(datetime(2020, 1, 1, 1, 0, 0))
+    # now2 = datetime.timestamp(datetime(2020, 1, 1, 1, 0, 1))
+    # now3 = datetime.timestamp(datetime(2020, 1, 1, 1, 0, 2))
+    # now4 = datetime.timestamp(datetime(2020, 1, 1, 1, 1, 0))
 
-    # updated_candle = BtcJpyBaseCandle1M.get(now1)
+    # ticker = Ticker(settings.product_code, now1, 100, 100, 1)
+    # create_candle_with_duration(settings.product_code, '1m', ticker)
+    # ticker = Ticker(settings.product_code, now2, 110, 110, 1)
+    # create_candle_with_duration(settings.product_code, '1m', ticker)
 
-    import app.models
+    # ticker = Ticker(settings.product_code, now2, 80, 80, 1)
+    # create_candle_with_duration(settings.product_code, '1m', ticker)
 
-    now1 = datetime.datetime(2020, 1, 2, 3, 4, 5)
-    BtcJpyBaseCandle1M.create(now1, 1.0, 2.0, 3.0, 4.0, 5)
-    candle = BtcJpyBaseCandle1M.get(now1)
-    print(candle.time)
-    print(candle.open)
-    candle.open = 100.0
-    print(candle.open)
-    candle.save()
+    # ticker = Ticker(settings.product_code, now4, 200, 200, 1)
+    # create_candle_with_duration(settings.product_code, '1m', ticker)
 
-    updated_candle = BtcJpyBaseCandle1M.get(now1)
-    print(updated_candle.open)
+    # streamThread = Thread(target=stream.stream_ingestion_data)
+    # streamThread.start()
+
+    stream = StreamData()
+    for i in range(0, 100):
+        stream.stream_ingestion_data()
+        time.sleep(0.5)
