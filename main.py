@@ -41,7 +41,11 @@ if __name__ == "__main__":
     # streamThread = Thread(target=stream.stream_ingestion_data)
     # streamThread.start()
 
-    stream = StreamData()
-    for i in range(0, 100):
-        stream.stream_ingestion_data()
-        time.sleep(0.5)
+    # stream = StreamData()
+    # for i in range(0, 100):
+    #     stream.stream_ingestion_data()
+    #     time.sleep(0.5)
+    from app.models.dfcandle import DataFrameCandle
+    df = DataFrameCandle(settings.product_code, settings.trade_duration)
+    df.set_all_candles(settings.past_period)
+    print(df.value)
