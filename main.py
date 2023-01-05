@@ -2,7 +2,9 @@ import logging
 import sys
 from datetime import datetime
 import app.models
+from threading import Thread
 
+from app.controllers.webserver import start
 
 from bitflyer.bitflyer import APIClient
 from bitflyer.bitflyer import Ticker
@@ -42,10 +44,14 @@ if __name__ == "__main__":
     # streamThread.start()
 
     # stream = StreamData()
-    # for i in range(0, 100):
+    # for i in range(0, 1000):
     #     stream.stream_ingestion_data()
     #     time.sleep(0.5)
-    from app.models.dfcandle import DataFrameCandle
-    df = DataFrameCandle(settings.product_code, settings.trade_duration)
-    df.set_all_candles(settings.past_period)
-    print(df.value)
+    # from app.models.dfcandle import DataFrameCandle
+    # df = DataFrameCandle(settings.product_code, settings.trade_duration)
+    # df.set_all_candles(settings.past_period)
+    # print(df.value)
+    serverThread = Thread(target=start)
+    serverThread.start()
+
+    serverThread.join()
