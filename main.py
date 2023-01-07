@@ -51,7 +51,18 @@ if __name__ == "__main__":
     # df = DataFrameCandle(settings.product_code, settings.trade_duration)
     # df.set_all_candles(settings.past_period)
     # print(df.value)
-    serverThread = Thread(target=start)
-    serverThread.start()
+    # serverThread = Thread(target=start)
+    # serverThread.start()
 
-    serverThread.join()
+    # serverThread.join()
+
+
+    from app.models.dfcandle import DataFrameCandle
+    import talib
+    import numpy as np
+
+    df = DataFrameCandle(settings.product_code,
+                         settings.trade_duration)
+    df.set_all_candles(100)
+    df.add_sma(7)
+    print(df)
