@@ -42,6 +42,49 @@ def api_make_handler():
     duration_time = constants.TRADE_MAP[duration]['duration']
     df = DataFrameCandle(product_code, duration_time)
     df.set_all_candles(limit)
+
+    sma = request.args.get('sma')
+    if sma:
+        str_sma_period_1 = request.args.get('smaPeriod1')
+        str_sma_period_2 = request.args.get('smaPeriod2')
+        str_sma_period_3 = request.args.get('smaPeriod3')
+        if str_sma_period_1:
+            period_1 = int(str_sma_period_1)
+        if str_sma_period_2:
+            period_2 = int(str_sma_period_2)
+        if str_sma_period_3:
+            period_3 = int(str_sma_period_3)
+        if not str_sma_period_1 or period_1 < 0:
+            period_1 = 7
+        if not str_sma_period_2 or period_2 < 0:
+            period_2 = 14
+        if not str_sma_period_3 or period_3 < 0:
+            period_3 = 50
+        df.add_sma(period_1)
+        df.add_sma(period_2)
+        df.add_sma(period_3)
+
+    ema = request.args.get('ema')
+    if ema:
+        str_ema_period_1 = request.args.get('emaPeriod1')
+        str_ema_period_2 = request.args.get('emaPeriod2')
+        str_ema_period_3 = request.args.get('emaPeriod3')
+        if str_ema_period_1:
+            period_1 = int(str_ema_period_1)
+        if str_ema_period_2:
+            period_2 = int(str_ema_period_2)
+        if str_ema_period_3:
+            period_3 = int(str_ema_period_3)
+        if not str_ema_period_1 or period_1 < 0:
+            period_1 = 7
+        if not str_ema_period_2 or period_2 < 0:
+            period_2 = 14
+        if not str_ema_period_3 or period_3 < 0:
+            period_3 = 50
+        df.add_ema(period_1)
+        df.add_ema(period_2)
+        df.add_ema(period_3)
+
     return jsonify(df.value), 200
 
 def start():

@@ -57,12 +57,21 @@ if __name__ == "__main__":
     # serverThread.join()
 
 
-    from app.models.dfcandle import DataFrameCandle
-    import talib
-    import numpy as np
+    # from app.models.dfcandle import DataFrameCandle
+    # import talib
+    # import numpy as np
 
-    df = DataFrameCandle(settings.product_code,
-                         settings.trade_duration)
-    df.set_all_candles(100)
-    df.add_sma(7)
-    print(df)
+    # df = DataFrameCandle(settings.product_code,
+    #                      settings.trade_duration)
+    # df.set_all_candles(100)
+    # df.add_sma(7)
+    # print(df.value)
+
+    # streamThread = Thread(target=stream.stream_ingestion_data)
+    serverThread = Thread(target=start)
+
+    # streamThread.start()
+    serverThread.start()
+
+    # streamThread.join()
+    serverThread.join()

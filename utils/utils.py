@@ -7,9 +7,10 @@ def bool_from_str(text: str) -> bool:
     if text.lower() == 'false':
         return False
 
+
 class Serializer(object):
     @property
-    def values(self):
+    def value(self):
         dict_values = omitempty(self.__dict__)
         if not dict_values:
             return None
