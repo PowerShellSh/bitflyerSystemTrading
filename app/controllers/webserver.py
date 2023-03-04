@@ -85,6 +85,24 @@ def api_make_handler():
         df.add_ema(period_2)
         df.add_ema(period_3)
 
+    bbands = request.args.get('bbands')
+    if bbands:
+        str_n = request.args.get('bbandsN')
+        str_k = request.args.get('bbandsK')
+        if str_n:
+            n = int(str_n)
+        if str_k:
+            k = float(str_k)
+        if not str_n or n < 0 or n is None:
+            n = 20
+        if not str_k or k < 0 or k is None:
+            k = 2.0
+        df.add_bbands(n, k)
+
+    ichimoku = request.args.get('ichimoku')
+    if ichimoku:
+        df.add_ichimoku()
+
     return jsonify(df.value), 200
 
 def start():
