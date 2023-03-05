@@ -49,6 +49,12 @@ class IchimokuCloud(Serializer):
         self.chikou = chikou
 
 
+class Rsi(Serializer):
+    def __init__(self, period: int, values: list):
+        self.period = period
+        self.values = values
+
+
 class DataFrameCandle(object):
 
     def __init__(self, product_code=settings.product_code, duration=settings.trade_duration):
@@ -60,6 +66,7 @@ class DataFrameCandle(object):
         self.emas = []
         self.bbands = BBands(0, 0, [], [], [])
         self.ichimoku_cloud = IchimokuCloud([], [], [], [], [])
+        self.rsi = Rsi(0, [])
 
     def set_all_candles(self, limit=1000):
         self.candles = self.candle_cls.get_all_candles(limit)
@@ -73,8 +80,9 @@ class DataFrameCandle(object):
             'candles': [c.value for c in self.candles],
             'smas': empty_to_none([s.value for s in self.smas]),
             'emas': empty_to_none([s.value for s in self.emas]),
-            'bbans' : self.bbands.value,
+            'bbands': self.bbands.value,
             'ichimoku': self.ichimoku_cloud.value,
+            'rsi': self.rsi.value,
         }
 
     @property
@@ -136,7 +144,6 @@ class DataFrameCandle(object):
             return True
         return False
 
-
     def add_bbands(self, n:int, k:float):
         if n <= len(self.closes):
             up, mid, down = talib.BBANDS(np.asarray(self.closes), n, k, k, 0)
@@ -152,5 +159,17 @@ class DataFrameCandle(object):
             tenkan, kijun, senkou_a, senkou_b, chikou = ichimoku_cloud(self.closes)
             self.ichimoku_cloud = IchimokuCloud(
                 tenkan, kijun, senkou_a, senkou_b, chikou)
+            return True
+        return False
+
+    def add_rsi(self, period: int):
+
+        if len(self.closes) > period:
+            values = talib.RSI(np.asarray(self.closes), period)
+            rsi = Rsi(
+                period,
+                nan_to_zero(values).tolist()
+            )
+            self.rsi = rsi
             return True
         return False
