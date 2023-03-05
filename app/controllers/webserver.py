@@ -112,6 +112,25 @@ def api_make_handler():
             period = 14
         df.add_rsi(period)
 
+    macd = request.args.get('macd')
+    if macd:
+        str_macd_period_1 = request.args.get('macdPeriod1')
+        str_macd_period_2 = request.args.get('macdPeriod2')
+        str_macd_period_3 = request.args.get('macdPeriod3')
+        if str_macd_period_1:
+            period_1 = int(str_macd_period_1)
+        if str_macd_period_2:
+            period_2 = int(str_macd_period_2)
+        if str_macd_period_3:
+            period_3 = int(str_macd_period_3)
+        if not str_macd_period_1 or period_1 < 0:
+            period_1 = 12
+        if not str_macd_period_2 or period_2 < 0:
+            period_2 = 26
+        if not str_macd_period_3 or period_3 < 0:
+            period_3 = 9
+        df.add_macd(period_1, period_2, period_3)
+
     return jsonify(df.value), 200
 
 
