@@ -17,8 +17,8 @@ import settings
 class SignalEvent(Base):
     __tablename__ = 'signal_event'
 
-    time = Column(DateTime, primary_key=True,nullable=False)
-    poduct_code = Column(String)
+    time = Column(DateTime, primary_key=True, nullable=False)
+    product_code = Column(String)
     side = Column(String)
     price = Column(Float)
     units = Column(Integer)
@@ -32,18 +32,18 @@ class SignalEvent(Base):
         dict_values = omitempty({
             'time': self.time,
             'product_code': self.product_code,
+            'side': self.side,
             'price': self.price,
             'units': self.units,
         })
         if not dict_values:
             return None
-        else:
-            return dict_values
+        return dict_values
 
     @classmethod
-    def get_signal_events_by_count(cls, count,product_code=settings.product_code):
+    def get_signal_events_by_count(cls, count, prduct_code=settings.product_code):
         with session_scope() as session:
-            rows = session.query(cls).filter(cls.product_code == product_code).order_by(desc(cls.time)).limit(count).all()
+            rows = session.query(cls).filter(cls.product_code == prduct_code).order_by(desc(cls.time)).limit(count).all()
             if rows is None:
                 return []
             rows.reverse()
